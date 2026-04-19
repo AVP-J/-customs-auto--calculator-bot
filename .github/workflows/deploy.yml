@@ -5,15 +5,50 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
+    
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
       
-      - name: 📋 Test GitHub Actions
+      - name: 🔐 Setup SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          echo "✅ GitHub Actions is working!"
-          echo "Repository: ${{ github.repository }}"
-          echo "Branch: ${{ github.ref }}"
-          echo "Commit: ${{ github.sha }}"
+          echo "Setting up SSH for $SERVER_USER@$SERVER_IP"
+          
+          # Проверка что Secrets добавлены
+          if [ -z "$SERVER_IP" ]; then
+            echo "⚠️ SERVER_IP is empty"
+            echo "Please add SERVER_IP to GitHub Secrets"
+            exit 0  # Не падаем, просто пропускаем деплой
+          fi
+          
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan "$SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null
+          
+          echo "✅ SSH настроен"
+      
+      - name: 🚀 Test SSH Connection
+        if: env.SERVER_IP != ''
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          echo "Testing SSH connection to $SERVER_USER@$SERVER_IP..."
+          ssh $SERVER_USER@$SERVER_IP "echo '✅ SSH connection successful'"
+      
+      - name: 🚀 Deploy to Server
+        if: env.SERVER_IP != ''
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          echo "🚀 Deploying Customs Bot to server..."
+          ssh $SERVER_USER@$SERVER_IP "cd /opt/customs-bot && git pull && ./deploy.sh"
+          echo "✅ Deployment complete!"
