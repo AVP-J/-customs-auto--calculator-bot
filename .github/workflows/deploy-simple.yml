@@ -1,35 +1,38 @@
-name: Deploy to Production
+name: Deploy with Variables
 on:
   workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      SSH_KEY: ${{ vars.SSH_PRIVATE_KEY }}
+      SSH_HOST: ${{ vars.DEPLOY_HOST }}
+      SSH_USER: ${{ vars.DEPLOY_USER }}
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
       
       - name: 🔐 Setup SSH
-        env:
-          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
-          SSH_HOST: ${{ secrets.DEPLOY_HOST }}
-          SSH_USER: ${{ secrets.DEPLOY_USER }}
         run: |
+          echo "Setting up SSH for $SSH_USER@$SSH_HOST"
+          
+          # Проверяем переменные
+          if [ -z "$SSH_HOST" ]; then
+            echo "❌ ERROR: SSH_HOST is empty!"
+            exit 1
+          fi
+          
           mkdir -p ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan $SSH_HOST >> ~/.ssh/known_hosts
+          
+          # Исправленная команда ssh-keyscan
+          ssh-keyscan "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          
+          echo "✅ SSH настроен"
       
-      - name: 🚀 Deploy to Server
+      - name: 🚀 Test Connection
         run: |
-          echo "Деплой на сервер $SSH_HOST..."
-          ssh $SSH_USER@$SSH_HOST "cd /opt/customs-bot && git pull && ./deploy.sh"
-      
-      - name: 📢 Send Telegram Notification
-        env:
-          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: |
-          curl -s -X POST "https://api.telegram.org/bot$BOT_TOKEN/sendMessage" \
-            -d chat_id="$CHAT_ID" \
-            -d text="✅ Деплой Customs Bot завершён!\n\nСервер: ${{ secrets.DEPLOY_HOST }}\nВремя: $(date)" \
-            > /dev/null 2>&1 || echo "Не удалось отправить в Telegram"
+          echo "Testing SSH connection..."
+          ssh $SSH_USER@$SSH_HOST "echo 'SSH test successful'"
+
