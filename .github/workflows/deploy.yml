@@ -13,26 +13,23 @@ jobs:
         uses: actions/checkout@v4
       
       - name: 🔐 Setup SSH
-        env:
-          SSH_KEY: ${{ secrets.SSH_KEY }}
-          SERVER_IP: ${{ secrets.SERVER_IP }}
-          SERVER_USER: ${{ secrets.SERVER_USER }}
-        run: |
-          echo "Setting up SSH for $SERVER_USER@$SERVER_IP"
-          
-          # Проверка что Secrets добавлены
-          if [ -z "$SERVER_IP" ]; then
-            echo "⚠️ SERVER_IP is empty"
-            echo "Please add SERVER_IP to GitHub Secrets"
-            exit 0  # Не падаем, просто пропускаем деплой
-          fi
-          
-          mkdir -p ~/.ssh
-          echo "$SSH_KEY" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan "$SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null
-          
-          echo "✅ SSH настроен"
+   env:
+    SSH_KEY: ${{ secrets.SSH_KEY }}
+    SERVER_IP: ${{ secrets.SERVER_IP }}
+    SERVER_USER: ${{ secrets.SERVER_USER }}
+  run: |
+    echo "Setting up SSH for $SERVER_USER@$SERVER_IP"
+    
+    mkdir -p ~/.ssh
+    echo "$SSH_KEY" > ~/.ssh/id_rsa
+    chmod 600 ~/.ssh/id_rsa
+    
+    # КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: добавляем оба хоста
+    echo "Adding GitHub and server to known_hosts..."
+    ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+    ssh-keyscan "$SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null
+    
+    echo "✅ SSH настроен"
       
       - name: 🚀 Test SSH Connection
         if: env.SERVER_IP != ''
