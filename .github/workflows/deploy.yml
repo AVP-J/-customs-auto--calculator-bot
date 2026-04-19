@@ -12,8 +12,50 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v4
       
-      - name: 📋 Show info
+      - name: 🔐 Setup SSH
+        env:
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
         run: |
-          echo "🚀 Customs Bot Deployment Test"
-          echo "If you see this, GitHub Actions works!"
-          echo "Repository: ${{ github.repository }}"
+          echo "Setting up SSH for $SERVER_USER@$SERVER_IP"
+          
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Добавляем ВСЕ необходимые хосты
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          ssh-keyscan "$SERVER_IP" >> ~/.ssh/known_hosts 2>/dev/null
+          
+          echo "✅ SSH настроен"
+      
+      - name: 🚀 Deploy to Server
+        if: env.SERVER_IP != ''
+        env:
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          echo "🚀 Deploying Customs Bot to server..."
+          
+          ssh $SERVER_USER@$SERVER_IP "
+            echo '1. Переходим в директорию бота...'
+            cd /opt/customs-bot
+            
+            echo '2. Настраиваем Git для SSH...'
+            git config --global --add safe.directory /opt/customs-bot
+            
+            echo '3. Получаем обновления...'
+            git fetch origin
+            
+            echo '4. Сбрасываем на последнюю версию...'
+            git reset --hard origin/main
+            
+            echo '5. Запускаем деплой...'
+            ./deploy.sh
+            
+            echo '6. Проверяем результат...'
+            git log --oneline -n 3 && echo '✅ Код обновлён'
+          "
+          
+          echo "✅ Deployment complete!"
