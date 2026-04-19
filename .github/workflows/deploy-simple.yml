@@ -1,7 +1,12 @@
 name: Deploy Simple
-on: [workflow_dispatch]
+on:
+  workflow_dispatch:
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Deployment would happen here"
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Test
+        run: echo "Deployment test successful"
