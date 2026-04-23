@@ -1,163 +1,211 @@
 """
-Text message handlers.
+Messages for step-by-step interface.
 """
-import logging
-import re
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ContextTypes
+from .states import UserState
 
-logger = logging.getLogger(__name__)
 
-async def text_message_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle text messages (for step-by-step input)."""
-    user = update.effective_user
-    text = update.message.text.strip()
+def get_message_for_state(state: UserState, user_data: dict = None) -> str:
+    """
+    Get message for specific user state.
     
-    logger.info(f"User {user.id} sent text: {text}")
+    Args:
+        state: Current user state
+        user_data: User session data
     
-    # Check if user is in input flow
-    input_step = context.user_data.get("input_step")
+    Returns:
+        Message text for the state
+    """
+    if state == UserState.CHOOSE_VEHICLE_TYPE:
+        return get_vehicle_type_message()
     
-    if not input_step:
-        # Not in input flow, show help
-        await update.message.reply_text(
-            "Чтобы начать расчёт, отправьте /calculate\n"
-            "Для помощи отправьте /help"
-        )
-        return
+    elif state == UserState.ENTER_PRICE:
+        return get_price_message(user_data)
     
-    # Handle based on current step
-    if input_step == "brand":
-        await handle_brand_input(update, context, text)
-    elif input_step == "model":
-        await handle_model_input(update, context, text)
-    elif input_step == "year_month":
-        await handle_year_month_input(update, context, text)
-    elif input_step == "price":
-        await handle_price_input(update, context, text)
-    else:
-        await update.message.reply_text("Неизвестный шаг. Отправьте /calculate чтобы начать заново.")
+    elif state == UserState.CHOOSE_ENGINE_TYPE:
+        return get_engine_type_message(user_data)
+    
+    elif state == UserState.CHOOSE_COUNTRY:
+        return get_country_message(user_data)
+    
+    elif state == UserState.CONFIRM_DATA:
+        return get_confirmation_message(user_data)
+    
+    elif state == UserState.SHOW_RESULT:
+        return get_result_message(user_data)
+    
+    # Default message
+    return "🚗 *Customs Calculator Bot*\n\nВыберите действие:"
 
-async def handle_brand_input(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
-    """Handle car brand input."""
-    if len(text) < 2 or len(text) > 50:
-        await update.message.reply_text("Марка должна быть от 2 до 50 символов. Попробуйте снова:")
-        return
-    
-    # Store brand
-    context.user_data["car_data"]["brand"] = text
-    context.user_data["input_step"] = "model"
-    
-    await update.message.reply_text(
-        f"✅ Марка принята: {text}\n\n"
-        "2️⃣ **Введите модель автомобиля** (например: L6):",
-        parse_mode="Markdown"
+
+def get_vehicle_type_message() -> str:
+    """Message for vehicle type selection."""
+    return (
+        "🧮 *РАСЧЁТ ТАМОЖЕННЫХ ПЛАТЕЖЕЙ*\n"
+        "(на легковые автомобили при ввозе в Республику Казахстан)\n\n"
+        "📊 *ПАРАМЕТРЫ РАСЧЁТА*\n"
+        "1. Марка\n"
+        "2. Модель\n"
+        "3. Тип (электромобиль, гибрид, ДВС — бензин/дизель)\n"
+        "4. Год и месяц выпуска (ГГГГ-ММ)\n"
+        "5. Валюта покупки автомобиля\n"
+        "6. Стоимость автомобиля\n"
+        "7. Стоимость доставки автомобиля до границы РК\n\n"
+        "Нажмите 🚀 НАЧАТЬ РАСЧЁТ чтобы продолжить."
     )
 
-async def handle_model_input(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
-    """Handle car model input."""
-    if len(text) < 1 or len(text) > 50:
-        await update.message.reply_text("Модель должна быть от 1 до 50 символов. Попробуйте снова:")
-        return
-    
-    # Store model
-    context.user_data["car_data"]["model"] = text
-    context.user_data["input_step"] = "type"
-    
-    # Show car type selection keyboard
-    keyboard = [
-        [
-            InlineKeyboardButton("⚡ Электрический", callback_data="car_type_electric"),
-            InlineKeyboardButton("⛽ Бензин", callback_data="car_type_gasoline")
-        ],
-        [
-            InlineKeyboardButton("⛽ Дизель", callback_data="car_type_diesel"),
-            InlineKeyboardButton("🌿 Гибрид", callback_data="car_type_hybrid")
-        ],
-        [InlineKeyboardButton("❌ Отмена", callback_data="cancel")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text(
-        f"✅ Модель принята: {text}\n\n"
-        "3️⃣ **Выберите тип автомобиля:**",
-        parse_mode="Markdown",
-        reply_markup=reply_markup
-    )
 
-async def handle_year_month_input(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
-    """Handle year and month input."""
-    # Validate format YYYY-MM
-    pattern = r'^\d{4}-(0[1-9]|1[0-2])$'
-    if not re.match(pattern, text):
-        await update.message.reply_text(
-            "Неверный формат. Введите год и месяц в формате ГГГГ-ММ (например: 2025-04):"
-        )
-        return
-    
-    year, month = text.split("-")
-    year_int = int(year)
-    
-    # Validate year (reasonable range: 2000-2030)
-    if year_int < 2000 or year_int > 2030:
-        await update.message.reply_text("Год должен быть между 2000 и 2030. Попробуйте снова:")
-        return
-    
-    # Store year-month
-    context.user_data["car_data"]["year_month"] = text
-    context.user_data["input_step"] = "price"
-    
-    await update.message.reply_text(
-        f"✅ Год принят: {text}\n\n"
-        "5️⃣ **Введите цену в Китае** (CNY, например 200000):",
-        parse_mode="Markdown"
-    )
-
-async def handle_price_input(update: Update, context: ContextTypes.DEFAULT_TYPE, text: str):
-    """Handle price input."""
-    try:
-        price = float(text.replace(",", ".").replace(" ", ""))
-        if price <= 0 or price > 10000000:  # Reasonable range: 0-10 million CNY
-            await update.message.reply_text("Цена должна быть от 1 до 10,000,000 CNY. Попробуйте снова:")
-            return
-    except ValueError:
-        await update.message.reply_text("Неверный формат цены. Введите число (например: 200000):")
-        return
-    
-    # Store price
-    context.user_data["car_data"]["price_cny"] = price
-    
-    # Show confirmation
-    car_data = context.user_data["car_data"]
-    confirmation_text = (
-        "📋 *ПОДТВЕРЖДЕНИЕ ДАННЫХ*\n\n"
-        f"*Марка:* {car_data.get('brand', 'Не указано')}\n"
-        f"*Модель:* {car_data.get('model', 'Не указано')}\n"
-        f"*Тип:* {get_car_type_name(car_data.get('type', ''))}\n"
-        f"*Год-месяц:* {car_data.get('year_month', 'Не указано')}\n"
-        f"*Цена в Китае:* {price:,.0f} CNY\n\n"
-        "Всё верно?"
-    )
-    
-    keyboard = [
-        [InlineKeyboardButton("✅ Да, всё верно", callback_data="confirm_data")],
-        [InlineKeyboardButton("✏️  Исправить", callback_data="edit_data")],
-        [InlineKeyboardButton("❌ Отмена", callback_data="cancel")]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    
-    await update.message.reply_text(
-        confirmation_text,
-        parse_mode="Markdown",
-        reply_markup=reply_markup
-    )
-
-def get_car_type_name(car_type: str) -> str:
-    """Convert car type code to readable name."""
-    type_map = {
-        "electric": "⚡ Электрический",
-        "gasoline": "⛽ Бензин",
-        "diesel": "⛽ Дизель",
-        "hybrid": "🌿 Гибрид"
+def get_price_message(user_data: dict) -> str:
+    """Message for price input."""
+    vehicle_type = user_data.get("vehicle_type", "автомобиль")
+    vehicle_names = {
+        "car": "легкового автомобиля",
+        "truck": "грузового автомобиля",
+        "motorcycle": "мотоцикла",
+        "bus": "автобуса",
+        "special": "спецтехники",
+        "bicycle": "велосипеда"
     }
-    return type_map.get(car_type, "Неизвестный")
+    
+    vehicle_name = vehicle_names.get(vehicle_type, "транспортного средства")
+    
+    return (
+        f"📊 *Шаг 2: Введите стоимость {vehicle_name}*\n\n"
+        f"Введите стоимость в долларах США (USD).\n"
+        f"Пример: 30000\n\n"
+        f"*Примечание:*\n"
+        f"• Укажите стоимость без НДС и других налогов\n"
+        f"• Если цена в другой валюте, конвертируйте в USD\n"
+        f"• Можно указать дробное число: 29999.99\n\n"
+        f"Введите число:"
+    )
+
+
+def get_engine_type_message(user_data: dict) -> str:
+    """Message for engine type selection."""
+    price = user_data.get("price")
+    price_text = f"{price:,.0f} USD" if price else "___ USD"
+    
+    return (
+        f"✅ Стоимость: {price_text}\n\n"
+        f"🔧 *Шаг 3: Выберите тип двигателя*\n\n"
+        f"Выберите тип двигателя:\n\n"
+        f"• ⚡ *Электромобиль* — 0% пошлина до 2028 года\n"
+        f"• 🔋 *Гибрид* — скидка 50% на пошлину\n"
+        f"• ⛽ *Бензин* — стандартная пошлина\n"
+        f"• 🛢️ *Дизель* — повышенная пошлина\n\n"
+        f"Выберите тип кнопкой ниже:"
+    )
+
+
+def get_country_message(user_data: dict) -> str:
+    """Message for country selection."""
+    engine_type = user_data.get("engine_type", "двигателя")
+    engine_names = {
+        "electric": "электромобиль",
+        "hybrid": "гибрид",
+        "gasoline": "бензиновый",
+        "diesel": "дизельный"
+    }
+    
+    engine_name = engine_names.get(engine_type, engine_type)
+    
+    return (
+        f"✅ Двигатель: {engine_name}\n\n"
+        f"🌍 *Шаг 4: Выберите страну происхождения*\n\n"
+        f"Выберите страну, из которой ввозится автомобиль:\n\n"
+        f"• 🇨🇳 *Китай* — большинство электромобилей\n"
+        f"• 🇺🇸 *США* — американские автомобили\n"
+        f"• 🇪🇺 *Европа* — европейские бренды\n"
+        f"• 🇯🇵 *Япония* — японские автомобили\n"
+        f"• 🇰🇷 *Корея* — корейские автомобили\n"
+        f"• 🇷🇺 *Россия* — российские автомобили\n\n"
+        f"Выберите страну кнопкой ниже:"
+    )
+
+
+def get_confirmation_message(user_data: dict) -> str:
+    """Message for data confirmation."""
+    # Format data for display
+    vehicle_type = user_data.get("vehicle_type", "не указан")
+    price = user_data.get("price", 0)
+    engine_type = user_data.get("engine_type", "не указан")
+    country = user_data.get("country", "не указана")
+    
+    # Human-readable names
+    vehicle_names = {
+        "car": "🚗 Легковой автомобиль",
+        "truck": "🚚 Грузовой автомобиль",
+        "motorcycle": "🏍️ Мотоцикл",
+        "bus": "🚌 Автобус",
+        "special": "🚜 Спецтехника",
+        "bicycle": "🚲 Велосипед"
+    }
+    
+    engine_names = {
+        "electric": "⚡ Электромобиль",
+        "hybrid": "🔋 Гибрид",
+        "gasoline": "⛽ Бензин",
+        "diesel": "🛢️ Дизель"
+    }
+    
+    country_names = {
+        "china": "🇨🇳 Китай",
+        "usa": "🇺🇸 США",
+        "europe": "🇪🇺 Европа",
+        "japan": "🇯🇵 Япония",
+        "korea": "🇰🇷 Корея",
+        "russia": "🇷🇺 Россия"
+    }
+    
+    return (
+        f"📋 *Проверьте введённые данные:*\n\n"
+        f"• *Тип ТС:* {vehicle_names.get(vehicle_type, vehicle_type)}\n"
+        f"• *Стоимость:* {price:,.0f} USD\n"
+        f"• *Двигатель:* {engine_names.get(engine_type, engine_type)}\n"
+        f"• *Страна:* {country_names.get(country, country)}\n\n"
+        f"*Всё верно?*\n\n"
+        f"Если да — нажмите «Всё верно, рассчитать»\n"
+        f"Если нужно исправить — нажмите «Исправить»"
+    )
+
+
+def get_result_message(user_data: dict) -> str:
+    """Message for calculation result."""
+    # TODO: Replace with actual calculation
+    # For now, show dummy result
+    
+    price = user_data.get("price", 30000)
+    
+    # Dummy calculation
+    customs_duty = price * 0.15  # 15%
+    vat = (price + customs_duty) * 0.16  # 16% VAT
+    excise_tax = price * 0.05  # 5%
+    clearance_fee = 50000  # 50,000 KZT
+    total_kzt = (price + customs_duty + vat + excise_tax) * 470 + clearance_fee
+    
+    return (
+        f"🎯 *Результат расчёта таможенных платежей*\n\n"
+        f"📊 *Исходные данные:*\n"
+        f"• Стоимость автомобиля: {price:,.0f} USD\n"
+        f"• Курс USD/KZT: 470 ₸\n\n"
+        f"💰 *Таможенные платежи:*\n"
+        f"• Таможенная пошлина: {customs_duty:,.0f} USD ({customs_duty/price*100:.1f}%)\n"
+        f"• НДС (16%): {vat:,.0f} USD\n"
+        f"• Акцизный налог: {excise_tax:,.0f} USD\n"
+        f"• Сбор за таможенное оформление: 50,000 ₸\n\n"
+        f"💵 *Итого к оплате:*\n"
+        f"• В USD: {price + customs_duty + vat + excise_tax:,.0f} USD\n"
+        f"• В KZT: {total_kzt:,.0f} ₸\n\n"
+        f"📈 *Итоговая стоимость автомобиля в Казахстане:*\n"
+        f"*{total_kzt:,.0f} ₸*\n\n"
+        f"⏱️ *Расчёт действителен:* 24 часа\n"
+        f"📅 *Дата расчёта:* 20.04.2026\n\n"
+        f"*Примечание:* Это предварительный расчёт. "
+        f"Точную сумму уточняйте у таможенного брокера."
+    )
+
+
+def text_message_handler(update, context):
+    """Handle text messages (for backward compatibility)."""
+    # This will be replaced by step_handlers.handle_text_input
+    pass

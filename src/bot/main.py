@@ -6,8 +6,8 @@ import logging
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 
 from config.config import TELEGRAM_BOT_TOKEN, LOGGING_CONFIG, DEBUG
-from src.bot.handlers import start_handler, help_handler, calculate_handler, history_handler
-from src.bot.callbacks import button_callback_handler
+from src.bot.handlers import start_handler, tariffs_handler, help_handler, calculate_handler, history_handler
+from src.bot.step_handlers import start_step_by_step, handle_callback_query, handle_text_input
 from src.bot.messages import text_message_handler
 
 # Configure logging
@@ -23,16 +23,21 @@ def main():
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
     # Add command handlers
-    application.add_handler(CommandHandler("start", start_handler))
-    application.add_handler(CommandHandler("help", help_handler))
-    application.add_handler(CommandHandler("calculate", calculate_handler))
+    application.add_handler(CommandHandler("старт", start_handler))
+    application.add_handler(CommandHandler("start", start_handler))  # keep English alias
+    application.add_handler(CommandHandler("тарифы", tariffs_handler))
+    application.add_handler(CommandHandler("tariffs", tariffs_handler))  # keep English alias
+    application.add_handler(CommandHandler("помощь", help_handler))
+    application.add_handler(CommandHandler("help", help_handler))  # keep English alias
+    application.add_handler(CommandHandler("рассчитать", calculate_handler))
+    application.add_handler(CommandHandler("calculate", calculate_handler))  # keep English alias
     application.add_handler(CommandHandler("history", history_handler))
     
-    # Add callback query handler for inline buttons
-    application.add_handler(CallbackQueryHandler(button_callback_handler))
+    # Add callback query handler for inline buttons (step-by-step interface)
+    application.add_handler(CallbackQueryHandler(handle_callback_query))
     
-    # Add message handler for text messages
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, text_message_handler))
+    # Add message handler for text messages (price input)
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_input))
     
     # Start the bot
     if DEBUG:
