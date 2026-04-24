@@ -49,18 +49,18 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         if context.user_data.get("car_data"):
             car_data = context.user_data["car_data"]
             edit_currency = car_data.get("currency") or "USD"
+            type_emoji = {"Электрический": "⚡", "Гибрид": "🔋", "Бензин": "⛽", "Дизель": "🛢️"}.get(car_data.get("type", ""), "")
+            currency_emoji = {"USD": "💵", "CNY": "🇨🇳", "EUR": "💶", "KZT": "🇰🇿", "JPY": "💴"}.get(car_data.get("currency", ""), "")
             edit_text = (
-                "✏️ РЕДАКТИРОВАНИЕ ДАННЫХ\n\n"
-                "Введите номер поля, которое хотите исправить:\n\n"
-                "1 — Марка\n"
-                "2 — Модель\n"
-                "3 — Тип двигателя\n"
-                "4 — Год и месяц выпуска\n"
-                "5 — Валюта\n"
-                f"6 — Стоимость ({edit_currency})\n"
-                f"7 — Доставка ({edit_currency})\n"
-                "\nИли отправьте:\n"
-                "отмена — отменить редактирование"
+                "Какой параметр хотите изменить?\n\n"
+                f"1. Марка: {car_data.get('brand', '')}\n"
+                f"2. Модель: {car_data.get('model', '')}\n"
+                f"3. Тип: {type_emoji} {car_data.get('type', '')}\n"
+                f"4. Год и месяц выпуска автомобиля: {car_data.get('year_month', '')}\n"
+                f"5. Валюта покупки: {currency_emoji} {car_data.get('currency', '')}\n"
+                f"6. Стоимость автомобиля: {car_data.get('price', 0):,.2f} {edit_currency}\n"
+                f"7. Стоимость доставки автомобиля до вашего города: {car_data.get('delivery_cost', 0):,.2f} {edit_currency}\n"
+                "\nОтправьте номер параметра (1-7) или /calculate для нового расчёта"
             )
             context.user_data["input_step"] = "edit_select"
             logger.info(f"Edit menu shown for user {user_id}")
@@ -69,7 +69,7 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
             except Exception as e:
                 logger.error(f"edit_message_text failed in confirm:no: {e}")
                 try:
-                    await query.message.reply_text("[edit] " + edit_text)
+                    await query.message.reply_text(edit_text)
                 except Exception as e2:
                     logger.error(f"reply_text also failed: {e2}")
         else:
