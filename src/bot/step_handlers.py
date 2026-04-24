@@ -298,8 +298,8 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
         
     elif callback_data == "confirm:no":
         # New flow: show edit selection menu
-        if "input_step" in context.user_data:
-            car_data = context.user_data.get("car_data", {})
+        if context.user_data.get("car_data"):
+            car_data = context.user_data["car_data"]
             edit_currency = car_data.get("currency") or "USD"
             edit_text = (
                 "✏️ РЕДАКТИРОВАНИЕ ДАННЫХ\n\n"
@@ -315,7 +315,12 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
                 "отмена — отменить редактирование"
             )
             context.user_data["input_step"] = "edit_select"
-            await query.edit_message_text(edit_text, reply_markup=None)
+            logger.info(f"Edit menu shown for user {user_id}")
+            try:
+                await query.edit_message_text(edit_text)
+            except Exception as e:
+                logger.error(f"edit_message_text failed: {e}")
+                await query.message.reply_text(edit_text)
         else:
             # Old flow fallback
             session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
