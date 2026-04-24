@@ -70,7 +70,8 @@ def get_engine_type_keyboard() -> InlineKeyboardMarkup:
     keyboard = [
         [InlineKeyboardButton("⚡ Электромобиль", callback_data="engine_type:electric")],
         [InlineKeyboardButton("🔋 Гибрид", callback_data="engine_type:hybrid")],
-        [InlineKeyboardButton("⛽ ДВС", callback_data="engine_type:gasoline")]
+        [InlineKeyboardButton("⛽ ДВС — бензин/дизель", callback_data="engine_type:gasoline")],
+        [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
@@ -144,6 +145,9 @@ def get_currency_keyboard() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("💴 JPY", callback_data="currency:jpy"),
+        ],
+        [
+            InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel"),
         ]
     ]
     return InlineKeyboardMarkup(keyboard)

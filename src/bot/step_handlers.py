@@ -41,6 +41,17 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     
     logger.debug(f"User {user_id}: callback_data = {callback_data}")
     
+    # Handle cancel from any step
+    if callback_data == "calc_cancel":
+        context.user_data["input_step"] = None
+        context.user_data["car_data"] = {}
+        await query.edit_message_text(
+            "❌ Расчёт отменён.\n\n"
+            "Чтобы начать новый расчёт, отправьте /calculate",
+            parse_mode="Markdown"
+        )
+        return
+    
     # Handle start_input from /calculate button
     if callback_data == "start_input":
         context.user_data["input_step"] = "brand"
