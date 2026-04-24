@@ -405,7 +405,7 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             await update.message.reply_text(
                 f"✅ Стоимость: {price:,.2f} {currency_price}\n\n"
-                "7. Введите стоимость доставки до границы РК (USD):",
+                f"7. Введите стоимость доставки до границы РК ({currency_price}):",
                 reply_markup=cancel_kb,
                 parse_mode="Markdown"
             )
@@ -494,7 +494,7 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"4. Год и месяц выпуска автомобиля: {car_data.get('year_month', '')}\n"
             f"5. Валюта покупки: {currency_emoji} {car_data.get('currency', '')}\n"
             f"6. Стоимость автомобиля: {car_data.get('price', 0):,.2f} {car_data.get('currency', 'USD')}\n"
-            f"7. Стоимость доставки до вашего города: {car_data.get('delivery_cost', 0):,.2f} USD\n\n"
+            f"7. Стоимость доставки до вашего города: {car_data.get('delivery_cost', 0):,.2f} {car_data.get('currency', 'USD')}\n\n"
             "Всё верно?"
         )
         
