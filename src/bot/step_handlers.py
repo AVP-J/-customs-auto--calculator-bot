@@ -38,9 +38,20 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     
     user_id = update.effective_user.id
     callback_data = query.data
-    session = session_manager.get_session(user_id)
     
-    logger.debug(f"User {user_id}: callback_data = {callback_data}, state = {session.state}")
+    logger.debug(f"User {user_id}: callback_data = {callback_data}")
+    
+    # Handle start_input from /calculate button
+    if callback_data == "start_input":
+        context.user_data["input_step"] = "brand"
+        context.user_data["car_data"] = {}
+        await query.edit_message_text(
+            "1. Введите марку автомобиля (например: Toyota, Li, Mercedes):",
+            parse_mode="Markdown"
+        )
+        return
+    
+    session = session_manager.get_session(user_id)
     
     # Handle navigation commands
     if callback_data == "cancel":
