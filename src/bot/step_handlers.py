@@ -54,10 +54,15 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     
     # Handle start_input from /calculate button
     if callback_data == "start_input":
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
         context.user_data["input_step"] = "brand"
         context.user_data["car_data"] = {}
+        cancel_kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
+        ])
         await query.edit_message_text(
             "1. Введите марку автомобиля (например: Toyota, Li, Mercedes):",
+            reply_markup=cancel_kb,
             parse_mode="Markdown"
         )
         return
