@@ -83,12 +83,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         
         type_emoji = {"electric": "⚡", "hybrid": "🔋", "gasoline": "⛽"}.get(engine_type, "")
         
-        # Send type confirmation as new message, then ask for year as another new message with cancel
-        await query.edit_message_text(
-            f"✅ Тип: {type_emoji} {car_data['type']}",
-            parse_mode="Markdown"
-        )
+        # Send type confirmation and next step as new messages (don't edit the button message)
         await query.message.reply_text(
+            f"✅ Тип: {type_emoji} {car_data['type']}\n\n"
             "4. Введите год и месяц выпуска (ГГГГ-ММ):",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
@@ -109,15 +106,12 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         
         currency_emoji = {"USD": "💵", "CNY": "🇨🇳", "EUR": "💶", "KZT": "🇰🇿", "JPY": "💴"}.get(currency, "")
         
-        # Send confirmation as new message, then ask for price as another new message with cancel button
+        # Send currency confirmation and next step as new messages (don't edit)
         cancel_kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
         ])
-        await query.edit_message_text(
-            f"✅ Валюта: {currency_emoji} {currency}",
-            parse_mode="Markdown"
-        )
         await query.message.reply_text(
+            f"✅ Валюта: {currency_emoji} {currency}\n\n"
             f"6. Введите стоимость автомобиля ({currency}):",
             reply_markup=cancel_kb,
             parse_mode="Markdown"
