@@ -396,12 +396,14 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context.user_data["car_data"] = car_data
             context.user_data["input_step"] = "delivery"
             
+            currency_price = car_data.get("currency", "USD")
+            
             await update.message.reply_text(
-                f"✅ Стоимость: {price:,.2f} {currency}\n\n"
+                f"✅ Стоимость: {price:,.2f} {currency_price}\n\n"
                 "7. Введите стоимость доставки до границы РК (USD):",
                 parse_mode="Markdown"
             )
-            logger.info(f"User {user_id} entered price: {price} {currency}")
+            logger.info(f"User {user_id} entered price: {price} {currency_price}")
         except (ValueError, TypeError):
             await update.message.reply_text(
                 "❌ Неверный формат. Введите число.\n"
