@@ -39,6 +39,9 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     user_id = update.effective_user.id
     callback_data = query.data
     
+    # Import here to avoid UnboundLocalError in nested conditions
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    
     logger.debug(f"User {user_id}: callback_data = {callback_data}")
     
     # Handle cancel from any step
@@ -54,7 +57,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     
     # Handle start_input from /calculate button
     if callback_data == "start_input":
-        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
         context.user_data["input_step"] = "brand"
         context.user_data["car_data"] = {}
         cancel_kb = InlineKeyboardMarkup([
