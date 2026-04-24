@@ -354,6 +354,32 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.info(f"User {user_id} entered model: {text}")
         return
     
+    elif input_step == "price":
+        try:
+            price_str = ''.join(c for c in text if c.isdigit() or c == '.')
+            price = float(price_str)
+            if price <= 0:
+                raise ValueError("Must be positive")
+            
+            currency = car_data.get("currency", "USD")
+            car_data["price"] = price
+            context.user_data["car_data"] = car_data
+            context.user_data["input_step"] = "delivery"
+            
+            await update.message.reply_text(
+                f"✅ Стоимость: {price:,.2f} {currency}\n\n"
+                "7. Введите стоимость доставки до границы РК (USD):",
+                parse_mode="Markdown"
+            )
+            logger.info(f"User {user_id} entered price: {price} {currency}")
+        except (ValueError, TypeError):
+            await update.message.reply_text(
+                "❌ Неверный формат. Введите число.\n"
+                "Пример: 30000 или 29999.99",
+                parse_mode="Markdown"
+            )
+        return
+    
     elif input_step == "edit_select":
         # Parse parameter number
         if text in ["1", "2", "3", "4", "5", "6", "7"]:
