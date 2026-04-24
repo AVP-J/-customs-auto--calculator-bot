@@ -315,13 +315,7 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
                 "отмена — отменить редактирование"
             )
             context.user_data["input_step"] = "edit_select"
-            # Remove keyboard from old message first
-            try:
-                await query.edit_message_reply_markup(reply_markup=None)
-            except:
-                pass
-            # Send edit menu as new message
-            await query.message.reply_text(edit_text)
+            await query.edit_message_text(edit_text, reply_markup=None)
         else:
             # Old flow fallback
             session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
