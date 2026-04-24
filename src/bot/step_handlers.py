@@ -377,13 +377,8 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["input_step"] = "type"
         
         # Show type selection keyboard
-        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
         from .keyboards import get_engine_type_keyboard
         
-        await update.message.reply_text(
-            f"✅ Марка: {car_data.get('brand', '')}",
-            parse_mode="Markdown"
-        )
         await update.message.reply_text(
             f"✅ Модель: {text}\n\n"
             "3. Выберите тип автомобиля:",
