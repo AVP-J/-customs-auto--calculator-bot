@@ -104,11 +104,10 @@ def get_confirmation_keyboard() -> InlineKeyboardMarkup:
     """Keyboard for data confirmation."""
     keyboard = [
         [
-            InlineKeyboardButton("✅ Всё верно, рассчитать", callback_data="confirm:yes"),
+            InlineKeyboardButton("✅ Да, всё верно", callback_data="confirm:yes"),
             InlineKeyboardButton("✏️ Исправить", callback_data="confirm:no")
         ],
         [
-            InlineKeyboardButton("↩️ Начать заново", callback_data="restart"),
             InlineKeyboardButton("❌ Отмена", callback_data="cancel")
         ]
     ]
