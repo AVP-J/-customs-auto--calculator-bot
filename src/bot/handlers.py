@@ -14,8 +14,6 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     first_name = user.first_name or ""
     
-    from .keyboards import get_menu_keyboard
-    
     welcome_text = (
         f"🚗 *Добро пожаловать, {first_name}!*\n\n"
         "Я — KZ Customs Calculator Bot, помогу рассчитать таможенные платежи "
@@ -28,12 +26,15 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Новичок: 3 расчёта/месяц (бесплатно)\n"
         "• Оплата по факту: 299 ₸/расчёт\n"
         "• Пакеты: 500/1,000/2,000 ₸ (скидка до 44%)\n"
-        "• Подписка PRO: 2,990 ₸/месяц\n\n"
+        "• Подписка PRO: 2,990 ₸/месяц\n"
+        "Подробнее по оплате — /tariffs\n\n"
+        "Больше информации о Калькуляторе — /help\n\n"
+        "Начнём? Отправьте /calculate\n\n"
         "Если вы таможенный брокер, здесь может быть ваша реклама.\n"
         "Напишите нам: info@calc.kz"
     )
     
-    await update.message.reply_text(welcome_text, parse_mode="Markdown", reply_markup=get_menu_keyboard())
+    await update.message.reply_text(welcome_text, parse_mode="Markdown")
 
 async def tariffs_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /tariffs command."""
