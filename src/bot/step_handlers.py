@@ -302,7 +302,7 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
             car_data = context.user_data.get("car_data", {})
             edit_currency = car_data.get("currency") or "USD"
             edit_text = (
-                "✏️ *РЕДАКТИРОВАНИЕ ДАННЫХ*\n\n"
+                "✏️ РЕДАКТИРОВАНИЕ ДАННЫХ\n\n"
                 "Введите номер поля, которое хотите исправить:\n\n"
                 "1 — Марка\n"
                 "2 — Модель\n"
@@ -312,10 +312,10 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
                 f"6 — Стоимость ({edit_currency})\n"
                 f"7 — Доставка ({edit_currency})\n"
                 "\nИли отправьте\n"
-                "❌ отмена — отменить редактирование"
+                "отмена — отменить редактирование"
             )
             context.user_data["input_step"] = "edit_select"
-            await query.edit_message_text(edit_text, parse_mode="Markdown")
+            await query.edit_message_text(edit_text)
         else:
             # Old flow fallback
             session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
