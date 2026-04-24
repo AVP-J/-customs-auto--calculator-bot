@@ -26,19 +26,15 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Новичок: 3 расчёта/месяц (бесплатно)\n"
         "• Оплата по факту: 299 ₸/расчёт\n"
         "• Пакеты: 500/1,000/2,000 ₸ (скидка до 44%)\n"
-        "• Подписка PRO: 2,990 ₸/месяц\n\n"
+        "• Подписка PRO: 2,990 ₸/месяц\n"
+        "Подробнее по оплате — /тарифы\n\n"
+        "Больше информации о Калькуляторе — /помощь\n\n"
+        "Начнём? Отправьте /рассчитать\n\n"
         "Если вы таможенный брокер, здесь может быть ваша реклама.\n"
         "Напишите нам: info@calc.kz"
     )
     
     await update.message.reply_text(welcome_text, parse_mode="Markdown")
-    
-    # Second message: clickable commands (no Markdown to keep bot commands working)
-    await update.message.reply_text(
-        "/тарифы — Подробнее по оплате\n"
-        "/помощь — Больше информации о Калькуляторе\n"
-        "/рассчитать — Начнём?"
-    )
 
 async def tariffs_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /tariffs command."""
