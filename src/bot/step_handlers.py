@@ -74,6 +74,24 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
         return
     
+    # Handle currency selection from the new text-only flow (context.user_data)
+    if callback_data.startswith("currency:") and "input_step" in context.user_data:
+        currency = callback_data.split(":")[1].upper()
+        car_data = context.user_data.get("car_data", {})
+        
+        car_data["currency"] = currency
+        context.user_data["car_data"] = car_data
+        context.user_data["input_step"] = "price"
+        
+        currency_emoji = {"USD": "💵", "CNY": "🇨🇳", "EUR": "💶", "KZT": "🇰🇿", "JPY": "💴"}.get(currency, "")
+        
+        await query.edit_message_text(
+            f"✅ Валюта: {currency_emoji} {currency}\n\n"
+            f"6. Введите стоимость автомобиля ({currency}):",
+            parse_mode="Markdown"
+        )
+        return
+    
     session = session_manager.get_session(user_id)
     
     # Handle navigation commands
