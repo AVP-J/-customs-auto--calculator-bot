@@ -51,6 +51,29 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
         )
         return
     
+    # Handle engine type from the new text-only flow (context.user_data)
+    if callback_data.startswith("engine_type:") and "input_step" in context.user_data:
+        engine_type = callback_data.split(":")[1]
+        car_data = context.user_data.get("car_data", {})
+        
+        type_names = {
+            "electric": "Электрический",
+            "hybrid": "Гибрид",
+            "gasoline": "Бензин"
+        }
+        car_data["type"] = type_names.get(engine_type, engine_type)
+        context.user_data["car_data"] = car_data
+        context.user_data["input_step"] = "year_month"
+        
+        type_emoji = {"electric": "⚡", "hybrid": "🔋", "gasoline": "⛽"}.get(engine_type, "")
+        
+        await query.edit_message_text(
+            f"✅ Тип: {type_emoji} {car_data['type']}\n\n"
+            "4. Введите год и месяц выпуска (ГГГГ-ММ):",
+            parse_mode="Markdown"
+        )
+        return
+    
     session = session_manager.get_session(user_id)
     
     # Handle navigation commands
