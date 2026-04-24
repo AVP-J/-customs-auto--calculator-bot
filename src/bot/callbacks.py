@@ -149,7 +149,7 @@ async def handle_currency_selection(query, context, callback_data):
 
 
 async def handle_confirmation_yes(query, context):
-    """Handle confirmation - proceed to calculation."""
+    """Handle confirmation - proceed to calculation and show result for free tier."""
     context.user_data["input_step"] = "calculating"
     
     # Show calculating message
@@ -181,7 +181,8 @@ async def handle_confirmation_yes(query, context):
     }.get(car.get("currency", ""), "")
     
     result_text = (
-        "🎯 *РАСЧЁТ ГОТОВ!*\n\n"
+        "🎯 *РАСЧЁТ ГОТОВ!*\n"
+        "(Тариф — НОВИЧОК)\n\n"
         "1. Марка: " + car.get("brand", "") + "\n"
         "2. Модель: " + car.get("model", "") + "\n"
         "3. Тип: " + type_emoji + " " + car.get("type", "") + "\n"
@@ -189,7 +190,11 @@ async def handle_confirmation_yes(query, context):
         "5. Валюта покупки: " + currency_emoji + " " + car.get("currency", "") + "\n"
         "6. Стоимость автомобиля: {price:,.2f}".format(price=car.get("price", 0)) + " " + car.get("currency", "USD") + "\n"
         "7. Стоимость доставки автомобиля до вашего города: {delivery:,.2f} USD\n\n".format(delivery=car.get("delivery_cost", 0)) +
+        "0 — Итого по таможенным платежам\n\n"
+        "💱 Калькулятор использует средневзвешенный курс валюты "
+        "на момент формирования расчёта.\n\n"
         "— — — — — — — — — —\n\n"
+        "В платной версии Вы увидите:\n\n"
         "0 — Стоимость автомобиля по таможенному каталогу:\n\n"
         "*Платежи (KZT):*\n"
         "0 — Таможенная пошлина\n"
@@ -198,10 +203,10 @@ async def handle_confirmation_yes(query, context):
         "0 — Первичная регистрация\n"
         "0 — Сертификат и ЭПТС (кнопка)\n"
         "0 — СВХ\n"
+        "0 — Услуги брокера\n"
         "*0 — Итого*\n\n"
-        "*0 — Стоимость вашего автомобиля включая расходы (KZT)*\n\n"
-        "* Калькулятор использует средневзвешенный курс валюты "
-        "на момент формирования расчёта."
+        "*0 — Стоимость вашего автомобиля включая расходы*\n\n"
+        "Выбрать тариф и перейти на платную версию — /tariffs"
     )
     
     await query.edit_message_text(
