@@ -66,20 +66,11 @@ def get_vehicle_type_keyboard() -> InlineKeyboardMarkup:
 
 
 def get_engine_type_keyboard() -> InlineKeyboardMarkup:
-    """Keyboard for choosing engine type."""
+    """Keyboard for choosing engine type — only 3 options."""
     keyboard = [
-        [
-            InlineKeyboardButton("⚡ Электромобиль", callback_data="engine_type:electric"),
-            InlineKeyboardButton("🔋 Гибрид", callback_data="engine_type:hybrid")
-        ],
-        [
-            InlineKeyboardButton("⛽ ДВС — бензин/дизель", callback_data="engine_type:gasoline"),
-            InlineKeyboardButton("🛢️ Дизель", callback_data="engine_type:diesel")
-        ],
-        [
-            InlineKeyboardButton("↩️ Назад", callback_data="back"),
-            InlineKeyboardButton("❌ Отмена", callback_data="cancel")
-        ]
+        [InlineKeyboardButton("⚡ Электромобиль", callback_data="engine_type:electric")],
+        [InlineKeyboardButton("🔋 Гибрид", callback_data="engine_type:hybrid")],
+        [InlineKeyboardButton("⛽ ДВС", callback_data="engine_type:gasoline")]
     ]
     return InlineKeyboardMarkup(keyboard)
 
