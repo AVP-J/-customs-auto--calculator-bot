@@ -297,12 +297,31 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.callback_query.edit_message_text(message, reply_markup=keyboard, parse_mode="Markdown")
         
     elif callback_data == "confirm:no":
-        # Go back to first step
-        session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
-        message = get_message_for_state(session.state, session.data)
-        keyboard = get_keyboard_for_state(session.state, session.data)
-        
-        await update.callback_query.edit_message_text(message, reply_markup=keyboard, parse_mode="Markdown")
+        # New flow: show edit selection menu
+        if "input_step" in context.user_data:
+            car_data = context.user_data.get("car_data", {})
+            edit_currency = car_data.get("currency") or "USD"
+            edit_text = (
+                "✏️ *РЕДАКТИРОВАНИЕ ДАННЫХ*\n\n"
+                "Введите номер поля, которое хотите исправить:\n\n"
+                "1 — Марка\n"
+                "2 — Модель\n"
+                "3 — Тип двигателя\n"
+                "4 — Год и месяц выпуска\n"
+                "5 — Валюта\n"
+                f"6 — Стоимость ({edit_currency})\n"
+                f"7 — Доставка ({edit_currency})\n"
+                "\nИли отправьте\n"
+                "❌ отмена — отменить редактирование"
+            )
+            context.user_data["input_step"] = "edit_select"
+            await query.edit_message_text(edit_text, parse_mode="Markdown")
+        else:
+            # Old flow fallback
+            session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
+            message = get_message_for_state(session.state, session.data)
+            keyboard = get_keyboard_for_state(session.state, session.data)
+            await update.callback_query.edit_message_text(message, reply_markup=keyboard, parse_mode="Markdown")
 
 
 async def handle_result_action(update: Update, context: ContextTypes.DEFAULT_TYPE, session, callback_data):
@@ -421,14 +440,15 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif input_step == "edit_select":
         # Parse parameter number
         if text in ["1", "2", "3", "4", "5", "6", "7"]:
+            edit_currency = car_data.get("currency") or "USD"
             param_map = {
                 "1": ("brand", "Введите марку автомобиля (например: Toyota, Li, Mercedes):"),
                 "2": ("model", "Введите модель автомобиля (например: RAV4, L7, E200):"),
                 "3": ("type", "Выберите тип автомобиля:"),
                 "4": ("year_month", "Введите год и месяц выпуска (ГГГГ-ММ):"),
                 "5": ("currency", "Выберите валюту покупки автомобиля:"),
-                "6": ("price", "Введите стоимость автомобиля:"),
-                "7": ("delivery", "Введите стоимость доставки до границы РК (USD):")
+                "6": ("price", f"Введите стоимость автомобиля ({edit_currency}):"),
+                "7": ("delivery", f"Введите стоимость доставки до границы РК ({edit_currency}):")
             }
             
             field, prompt = param_map[text]
