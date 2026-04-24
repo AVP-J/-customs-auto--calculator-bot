@@ -98,7 +98,6 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     
     # Handle currency selection from the new text-only flow (context.user_data)
     if callback_data.startswith("currency:") and "input_step" in context.user_data:
-        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
         currency = callback_data.split(":")[1].upper()
         car_data = context.user_data.get("car_data", {})
         
@@ -332,6 +331,9 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text.strip()
     session = session_manager.get_session(user_id)
     
+    # Import here as it's used in multiple places in this function
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    
     # Use context.user_data as simple FSM for new flow
     input_step = context.user_data.get("input_step", None)
     car_data = context.user_data.get("car_data", {})
@@ -353,7 +355,6 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["car_data"] = car_data
         context.user_data["input_step"] = "model"
         
-        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
         cancel_kb = InlineKeyboardMarkup([
             [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
         ])
