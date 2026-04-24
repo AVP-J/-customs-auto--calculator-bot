@@ -22,11 +22,14 @@ async def start_step_by_step(update: Update, context: ContextTypes.DEFAULT_TYPE)
     session = session_manager.get_session(user_id)
     session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
     
-    # Send first step message
-    message = get_message_for_state(session.state, session.data)
-    keyboard = get_keyboard_for_state(session.state, session.data)
+    # Send welcome message with input instructions
+    message = (
+        "🧮 *НАЧАТЬ РАСЧЁТ*\n\n"
+        "Для расчёта таможенных платежей введите данные об автомобиле.\n\n"
+        "1. Введите марку автомобиля (например: Toyota, Li, Mercedes):"
+    )
     
-    await update.message.reply_text(message, reply_markup=keyboard, parse_mode="Markdown")
+    await update.message.reply_text(message, parse_mode="Markdown")
     logger.info(f"Started step-by-step process for user {user_id}")
 
 
