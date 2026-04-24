@@ -44,6 +44,38 @@ async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TY
     
     logger.debug(f"User {user_id}: callback_data = {callback_data}")
     
+    # Handle confirm:no (edit) — place early to avoid any interception
+    if callback_data == "confirm:no":
+        if context.user_data.get("car_data"):
+            car_data = context.user_data["car_data"]
+            edit_currency = car_data.get("currency") or "USD"
+            edit_text = (
+                "✏️ РЕДАКТИРОВАНИЕ ДАННЫХ\n\n"
+                "Введите номер поля, которое хотите исправить:\n\n"
+                "1 — Марка\n"
+                "2 — Модель\n"
+                "3 — Тип двигателя\n"
+                "4 — Год и месяц выпуска\n"
+                "5 — Валюта\n"
+                f"6 — Стоимость ({edit_currency})\n"
+                f"7 — Доставка ({edit_currency})\n"
+                "\nИли отправьте:\n"
+                "отмена — отменить редактирование"
+            )
+            context.user_data["input_step"] = "edit_select"
+            logger.info(f"Edit menu shown for user {user_id}")
+            try:
+                await query.edit_message_text(edit_text)
+            except Exception as e:
+                logger.error(f"edit_message_text failed in confirm:no: {e}")
+                try:
+                    await query.message.reply_text("[edit] " + edit_text)
+                except Exception as e2:
+                    logger.error(f"reply_text also failed: {e2}")
+        else:
+            await query.edit_message_text("⚠️ Нет данных для редактирования. Начните новый расчёт /calculate")
+        return
+    
     # Handle cancel from any step
     if callback_data == "calc_cancel":
         context.user_data["input_step"] = None
@@ -296,39 +328,6 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
         
         await update.callback_query.edit_message_text(message, reply_markup=keyboard, parse_mode="Markdown")
         
-    elif callback_data == "confirm:no":
-        # New flow: show edit selection menu
-        if context.user_data.get("car_data"):
-            car_data = context.user_data["car_data"]
-            edit_currency = car_data.get("currency") or "USD"
-            edit_text = (
-                "✏️ РЕДАКТИРОВАНИЕ ДАННЫХ\n\n"
-                "Введите номер поля, которое хотите исправить:\n\n"
-                "1 — Марка\n"
-                "2 — Модель\n"
-                "3 — Тип двигателя\n"
-                "4 — Год и месяц выпуска\n"
-                "5 — Валюта\n"
-                f"6 — Стоимость ({edit_currency})\n"
-                f"7 — Доставка ({edit_currency})\n"
-                "\nИли отправьте:\n"
-                "отмена — отменить редактирование"
-            )
-            context.user_data["input_step"] = "edit_select"
-            logger.info(f"Edit menu shown for user {user_id}")
-            try:
-                await query.edit_message_text(edit_text)
-            except Exception as e:
-                logger.error(f"edit_message_text failed: {e}")
-                await query.message.reply_text(edit_text)
-        else:
-            # Old flow fallback
-            session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
-            message = get_message_for_state(session.state, session.data)
-            keyboard = get_keyboard_for_state(session.state, session.data)
-            await update.callback_query.edit_message_text(message, reply_markup=keyboard, parse_mode="Markdown")
-
-
 async def handle_result_action(update: Update, context: ContextTypes.DEFAULT_TYPE, session, callback_data):
     """Handle actions after calculation."""
     if callback_data == "new_calculation":
