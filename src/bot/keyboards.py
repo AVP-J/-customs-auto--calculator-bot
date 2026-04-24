@@ -5,6 +5,14 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from .states import UserState
 
 
+def get_start_calc_keyboard() -> InlineKeyboardMarkup:
+    """Start calculation button."""
+    keyboard = [
+        [InlineKeyboardButton("🚀 НАЧАТЬ РАСЧЁТ", callback_data="start_input")]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
 def get_keyboard_for_state(state: UserState, user_data: dict = None) -> InlineKeyboardMarkup:
     """
     Get keyboard for specific user state.

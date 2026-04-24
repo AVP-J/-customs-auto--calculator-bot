@@ -96,14 +96,26 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(help_text, parse_mode="Markdown")
 
 async def calculate_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /calculate command - start step-by-step calculation."""
-    from .step_handlers import start_step_by_step
-    
+    """Handle /calculate command - show start button."""
     user = update.effective_user
-    logger.info(f"User {user.id} started calculation")
+    logger.info(f"User {user.id} opened calculation")
     
-    # Start step-by-step process
-    await start_step_by_step(update, context)
+    from .keyboards import get_start_calc_keyboard
+    
+    await update.message.reply_text(
+        "🧮 *РАСЧЁТ ТАМОЖЕННЫХ ПЛАТЕЖЕЙ*\n\n"
+        "После нажатия кнопки вам нужно будет ввести данные об автомобиле:\n\n"
+        "1. Марка\n"
+        "2. Модель\n"
+        "3. Тип двигателя\n"
+        "4. Год и месяц выпуска\n"
+        "5. Валюта покупки\n"
+        "6. Стоимость автомобиля\n"
+        "7. Стоимость доставки\n\n"
+        "Нажмите 🚀 НАЧАТЬ РАСЧЁТ чтобы продолжить",
+        parse_mode="Markdown",
+        reply_markup=get_start_calc_keyboard()
+    )
 
 async def history_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /history command - show calculation history."""
