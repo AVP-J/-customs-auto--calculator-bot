@@ -6,9 +6,10 @@ from .states import UserState
 
 
 def get_start_calc_keyboard() -> InlineKeyboardMarkup:
-    """Start calculation button."""
+    """Start calculation button with cancel."""
     keyboard = [
-        [InlineKeyboardButton("🚀 НАЧАТЬ РАСЧЁТ", callback_data="start_input")]
+        [InlineKeyboardButton("🚀 НАЧАТЬ РАСЧЁТ", callback_data="start_input")],
+        [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
     ]
     return InlineKeyboardMarkup(keyboard)
 

@@ -319,6 +319,17 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
     input_step = context.user_data.get("input_step", None)
     car_data = context.user_data.get("car_data", {})
     
+    # Handle cancel command from text input
+    if text.lower() in ["отмена", "cancel", "стоп", "stop", "выход"] and input_step:
+        context.user_data["input_step"] = None
+        context.user_data["car_data"] = {}
+        await update.message.reply_text(
+            "❌ Расчёт отменён.\n\n"
+            "Чтобы начать новый расчёт, отправьте /calculate",
+            parse_mode="Markdown"
+        )
+        return
+    
     # New flow: starting from /рассчитать button
     if input_step == "brand":
         car_data["brand"] = text
