@@ -398,9 +398,14 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             currency_price = car_data.get("currency", "USD")
             
+            cancel_kb = InlineKeyboardMarkup([
+                [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
+            ])
+            
             await update.message.reply_text(
                 f"✅ Стоимость: {price:,.2f} {currency_price}\n\n"
                 "7. Введите стоимость доставки до границы РК (USD):",
+                reply_markup=cancel_kb,
                 parse_mode="Markdown"
             )
             logger.info(f"User {user_id} entered price: {price} {currency_price}")
