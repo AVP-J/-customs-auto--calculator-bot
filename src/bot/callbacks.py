@@ -19,8 +19,12 @@ async def button_callback_handler(update: Update, context: ContextTypes.DEFAULT_
     
     if callback_data == "start_input":
         await start_input_flow(query, context)
+    elif callback_data == "start_calc":
+        await start_input_flow(query, context)
     elif callback_data == "show_tariffs":
         await show_tariffs(query, context)
+    elif callback_data == "show_help":
+        await show_help(query, context)
     elif callback_data == "cancel":
         await cancel_operation(query, context)
     elif callback_data.startswith("car_type_"):
@@ -46,6 +50,27 @@ async def start_input_flow(query, context):
         "1. Введите марку автомобиля (например: Toyota, Li, Mercedes):",
         parse_mode="Markdown"
     )
+
+async def show_help(query, context):
+    """Show help information."""
+    help_text = (
+        "📚 *ПОМОЩЬ ПО KZ CUSTOMS CALCULATOR BOT*\n\n"
+        "📋 *КОМАНДЫ*\n"
+        "/старт — Начало работы\n"
+        "/рассчитать — Начать расчёт\n"
+        "/помощь — Эта справка\n"
+        "/тарифы — Стоимость услуг\n\n"
+        "⚙️ *КАК РАБОТАЕТ РАСЧЁТ*\n"
+        "1. Вводите данные об автомобиле\n"
+        "2. Бот рассчитывает таможенные платежи\n"
+        "3. Получаете детальный отчёт\n\n"
+        "* Расчёт калькулятора не является основанием для заполнения декларации, "
+        "но максимально приближен к реальным цифрам.\n\n"
+        "Начать расчёт: /рассчитать\n\n"
+        "Напишите нам: info@calc.kz"
+    )
+    await query.edit_message_text(help_text, parse_mode="Markdown")
+
 
 async def show_tariffs(query, context):
     """Show tariff information."""

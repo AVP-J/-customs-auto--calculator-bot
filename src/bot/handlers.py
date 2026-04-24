@@ -34,7 +34,8 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Напишите нам: info@calc.kz"
     )
     
-    await update.message.reply_text(welcome_text, parse_mode="Markdown")
+    from .keyboards import get_menu_keyboard
+    await update.message.reply_text(welcome_text, parse_mode="Markdown", reply_markup=get_menu_keyboard())
 
 async def tariffs_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /tariffs command."""

@@ -57,6 +57,20 @@ def get_vehicle_type_keyboard() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(keyboard)
 
 
+def get_menu_keyboard() -> InlineKeyboardMarkup:
+    """Main menu keyboard with commands."""
+    keyboard = [
+        [
+            InlineKeyboardButton("🧮 РАССЧИТАТЬ", callback_data="start_calc"),
+        ],
+        [
+            InlineKeyboardButton("💰 ТАРИФЫ", callback_data="show_tariffs"),
+            InlineKeyboardButton("📚 ПОМОЩЬ", callback_data="show_help")
+        ]
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+
 def get_engine_type_keyboard() -> InlineKeyboardMarkup:
     """Keyboard for choosing engine type."""
     keyboard = [
