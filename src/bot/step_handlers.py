@@ -311,11 +311,17 @@ async def handle_confirmation(update: Update, context: ContextTypes.DEFAULT_TYPE
                 "5 — Валюта\n"
                 f"6 — Стоимость ({edit_currency})\n"
                 f"7 — Доставка ({edit_currency})\n"
-                "\nИли отправьте\n"
+                "\nИли отправьте:\n"
                 "отмена — отменить редактирование"
             )
             context.user_data["input_step"] = "edit_select"
-            await query.edit_message_text(edit_text)
+            # Remove keyboard from old message first
+            try:
+                await query.edit_message_reply_markup(reply_markup=None)
+            except:
+                pass
+            # Send edit menu as new message
+            await query.message.reply_text(edit_text)
         else:
             # Old flow fallback
             session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
