@@ -341,9 +341,15 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["car_data"] = car_data
         context.user_data["input_step"] = "model"
         
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+        cancel_kb = InlineKeyboardMarkup([
+            [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
+        ])
+        
         await update.message.reply_text(
             f"✅ Марка: {text}\n\n"
             "2. Введите модель автомобиля (например: RAV4, L7, E200):",
+            reply_markup=cancel_kb,
             parse_mode="Markdown"
         )
         logger.info(f"User {user_id} entered brand: {text}")
@@ -355,6 +361,7 @@ async def handle_text_input(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data["input_step"] = "type"
         
         # Show type selection keyboard
+        from telegram import InlineKeyboardButton, InlineKeyboardMarkup
         from .keyboards import get_engine_type_keyboard
         
         await update.message.reply_text(
