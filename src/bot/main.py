@@ -22,31 +22,17 @@ def main():
     # Create application
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
     
-    # Add English command handlers
+    # Add command handlers (English)
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("tariffs", tariffs_handler))
     application.add_handler(CommandHandler("help", help_handler))
     application.add_handler(CommandHandler("calculate", calculate_handler))
     application.add_handler(CommandHandler("history", history_handler))
     
-    # Russian commands via message handler (python-telegram-bot doesn't support Cyrillic commands)
-    application.add_handler(MessageHandler(
-        filters.Regex(r"^/старт($|\s)"), start_handler
-    ))
-    application.add_handler(MessageHandler(
-        filters.Regex(r"^/тарифы($|\s)"), tariffs_handler
-    ))
-    application.add_handler(MessageHandler(
-        filters.Regex(r"^/помощь($|\s)"), help_handler
-    ))
-    application.add_handler(MessageHandler(
-        filters.Regex(r"^/рассчитать($|\s)"), calculate_handler
-    ))
-    
     # Add callback query handler for inline buttons (step-by-step interface)
     application.add_handler(CallbackQueryHandler(handle_callback_query))
     
-    # Add message handler for text messages (price input, text without commands)
+    # Add message handler for text messages (step input, not a command)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_input))
     
     # Start the bot

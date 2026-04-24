@@ -52,8 +52,25 @@ success "Зависимости установлены"
 
 # Шаг 4: Проверяем переменные окружения
 info "Шаг 4: Проверяем конфигурацию..."
+
+# Определяем окружение по имени бота
+if grep -q "DEVELOPMENT" .env 2>/dev/null || [ -f ".env.development" ]; then
+    ENVIRONMENT="development"
+    BOT_NAME="Customs Calculator Dev Bot"
+    info "Окружение: РАЗРАБОТКА ($ENVIRONMENT)"
+else
+    ENVIRONMENT="production"
+    BOT_NAME="Customs Calculator Bot"
+    info "Окружение: ПРОДАКШЕН ($ENVIRONMENT)"
+fi
+
 if [ ! -f ".env" ]; then
-    if [ -f ".env.example" ]; then
+    # Пробуем найти конфиг для окружения
+    if [ -f ".env.$ENVIRONMENT" ]; then
+        info "Используем конфиг для окружения $ENVIRONMENT"
+        cp ".env.$ENVIRONMENT" .env
+        success "Файл .env создан из .env.$ENVIRONMENT"
+    elif [ -f ".env.example" ]; then
         error "Файл .env не найден"
         info "Создайте .env на основе .env.example:"
         info "  cp .env.example .env"
@@ -64,7 +81,16 @@ if [ ! -f ".env" ]; then
         exit 1
     fi
 else
-    success "Файл .env найден"
+    success "Файл .env найден (окружение: $ENVIRONMENT)"
+fi
+
+# Проверяем токен бота
+if ! grep -q "TELEGRAM_BOT_TOKEN" .env || grep -q "YOUR_BOT_TOKEN_HERE" .env; then
+    error "Токен бота не настроен в .env"
+    info "Добавьте TELEGRAM_BOT_TOKEN в .env файл"
+    exit 1
+else
+    success "Токен бота настроен"
 fi
 
 # Шаг 5: Проверяем что бот может запуститься
@@ -113,12 +139,31 @@ echo "=" * 60
 success "🎉 Деплой успешно завершён!"
 echo ""
 echo "📊 Информация о системе:"
+echo "  Окружение: $ENVIRONMENT"
+echo "  Бот: $BOT_NAME"
 echo "  Python: $(python --version 2>&1)"
 echo "  Директория: $(pwd)"
 echo "  Время: $(date)"
 echo ""
-echo "🚀 Бот должен быть доступен в Telegram:"
-echo "  https://t.me/CustomsCalcKZBot"
+
+if [ "$ENVIRONMENT" = "development" ]; then
+    echo "🧪 ТЕСТОВЫЙ РЕЖИМ:"
+    echo "  • DEBUG=True (подробные логи)"
+    echo "  • Mock данные для платежей"
+    echo "  • Тестовый бот (не продакшен)"
+    echo ""
+    echo "🚀 Тестовый бот должен быть доступен в Telegram"
+    echo "  (используй токен из .env.development)"
+else
+    echo "🚀 ПРОДАКШЕН РЕЖИМ:"
+    echo "  • DEBUG=False (минимальные логи)"
+    echo "  • Реальные платежи (если настроены)"
+    echo "  • Продакшен бот"
+    echo ""
+    echo "🚀 Бот должен быть доступен в Telegram:"
+    echo "  https://t.me/CustomsCalcKZBot"
+fi
+
 echo ""
 echo "📝 Команды для управления:"
 echo "  Статус бота: sudo systemctl status customs-bot"

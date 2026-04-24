@@ -14,27 +14,25 @@ async def start_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     first_name = user.first_name or ""
     
+    from .keyboards import get_menu_keyboard
+    
     welcome_text = (
         f"🚗 *Добро пожаловать, {first_name}!*\n\n"
         "Я — KZ Customs Calculator Bot, помогу рассчитать таможенные платежи "
         "на легковые автомобили для ввоза в Республику Казахстан.\n\n"
         "📋 *Как это работает:*\n\n"
-        "1️⃣ Отправьте /рассчитать\n"
+        "1️⃣ Отправьте /calculate\n"
         "2️⃣ Введите данные об автомобиле\n"
         "3️⃣ Получите расчёт\n\n"
         "💰 Тарифы:\n"
         "• Новичок: 3 расчёта/месяц (бесплатно)\n"
         "• Оплата по факту: 299 ₸/расчёт\n"
         "• Пакеты: 500/1,000/2,000 ₸ (скидка до 44%)\n"
-        "• Подписка PRO: 2,990 ₸/месяц\n"
-        "Подробнее по оплате — /тарифы\n\n"
-        "Больше информации о Калькуляторе — /помощь\n\n"
-        "Начнём? Отправьте /рассчитать\n\n"
+        "• Подписка PRO: 2,990 ₸/месяц\n\n"
         "Если вы таможенный брокер, здесь может быть ваша реклама.\n"
         "Напишите нам: info@calc.kz"
     )
     
-    from .keyboards import get_menu_keyboard
     await update.message.reply_text(welcome_text, parse_mode="Markdown", reply_markup=get_menu_keyboard())
 
 async def tariffs_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -62,7 +60,7 @@ async def tariffs_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Неограниченные расчёты\n"
         "• Экспорт в PDF\n"
         "• Приоритетная поддержка\n\n"
-        "Начать расчёт: /рассчитать\n\n"
+        "Начать расчёт: /calculate\n\n"
         "Если вы таможенный брокер, здесь может быть ваша реклама.\n"
         "Напишите нам: info@calc.kz"
     )
@@ -75,10 +73,10 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     help_text = (
         "📚 *ПОМОЩЬ ПО KZ CUSTOMS CALCULATOR BOT*\n\n"
         "📋 *КОМАНДЫ*\n"
-        "/старт — Начало работы\n"
-        "/рассчитать — Начать расчёт\n"
-        "/помощь — Эта справка\n"
-        "/тарифы — Стоимость услуг\n\n"
+        "/start — Начало работы\n"
+        "/calculate — Начать расчёт\n"
+        "/help — Эта справка\n"
+        "/tariffs — Стоимость услуг\n\n"
         "⚙️ *КАК РАБОТАЕТ РАСЧЁТ*\n"
         "1. Вводите данные об автомобиле\n"
         "2. Бот рассчитывает таможенные платежи\n"
@@ -89,7 +87,7 @@ async def help_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "но максимально приближен к реальным цифрам.\n\n"
         "*Для более детальных расчётов рекомендуется обратиться "
         "к Таможенному брокеру.\n\n"
-        "Начать расчёт: /рассчитать\n\n"
+        "Начать расчёт: /calculate\n\n"
         "Если вы таможенный брокер, здесь может быть ваша реклама.\n"
         "Напишите нам: info@calc.kz"
     )

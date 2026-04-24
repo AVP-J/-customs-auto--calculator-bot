@@ -1,7 +1,7 @@
 name: Deploy Customs Bot
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
@@ -35,8 +35,20 @@ jobs:
         env:
           SERVER_IP: ${{ secrets.SERVER_IP }}
           SERVER_USER: ${{ secrets.SERVER_USER }}
+          GITHUB_REF: ${{ github.ref }}
         run: |
           echo "🚀 Deploying Customs Bot to server..."
+          
+          # Определяем ветку
+          if [[ "$GITHUB_REF" == "refs/heads/develop" ]]; then
+            BRANCH="develop"
+            ENV_FILE=".env.development"
+            echo "📱 Deploying from DEVELOP branch (testing)"
+          else
+            BRANCH="main"
+            ENV_FILE=".env.production"
+            echo "🚀 Deploying from MAIN branch (production)"
+          fi
           
           ssh $SERVER_USER@$SERVER_IP "
             echo '1. Переходим в директорию бота...'
@@ -45,17 +57,35 @@ jobs:
             echo '2. Настраиваем Git для SSH...'
             git config --global --add safe.directory /opt/customs-bot
             
-            echo '3. Получаем обновления...'
+            echo '3. Получаем обновления из ветки $BRANCH...'
             git fetch origin
             
-            echo '4. Сбрасываем на последнюю версию...'
-            git reset --hard origin/main
+            echo '4. Сбрасываем на последнюю версию ветки $BRANCH...'
+            git reset --hard origin/$BRANCH
             
-            echo '5. Запускаем деплой...'
+            echo '5. Используем конфиг для $BRANCH...'
+            if [ -f "$ENV_FILE" ]; then
+              cp "$ENV_FILE" .env
+              echo '   ✅ Конфиг применён: $ENV_FILE -> .env'
+            else
+              echo '   ⚠️  Конфиг $ENV_FILE не найден, используем .env по умолчанию'
+            fi
+            
+            echo '6. Запускаем деплой...'
             ./deploy.sh
             
-            echo '6. Проверяем результат...'
+            echo '7. Проверяем результат...'
             git log --oneline -n 3 && echo '✅ Код обновлён'
+            
+            echo '8. Статус бота...'
+            sudo systemctl status customs-bot --no-pager || echo '⚠️  Сервис не запущен'
           "
           
-          echo "✅ Deployment complete!"
+          echo "✅ Deployment complete from $BRANCH branch!"
+          
+          # Отправляем уведомление в Telegram
+          if [[ "$BRANCH" == "develop" ]]; then
+            echo "📱 Тестовый деплой завершён. Проверяй бота!"
+          else
+            echo "🚀 Продакшен деплой завершён."
+          fi

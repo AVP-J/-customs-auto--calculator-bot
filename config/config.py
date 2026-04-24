@@ -1,21 +1,25 @@
 """
 Configuration module for Customs Calculator Bot.
-Replace placeholder values with actual credentials.
 """
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Base directory
 BASE_DIR = Path(__file__).parent.parent
 
 # Telegram Bot Configuration
-# TODO: Replace with your actual bot token from @BotFather
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Example: "1234567890:ABCdefGHIjklMNOpqrSTUvwxYZ"
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
 
 # Admin user ID (your Telegram ID)
-# TODO: Replace with your actual Telegram ID
-TELEGRAM_ADMIN_ID = 1605591886  # Your Telegram ID
+TELEGRAM_ADMIN_ID = int(os.getenv("TELEGRAM_ADMIN_ID", "1605591886"))
+
+# Debug mode
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # Database Configuration
 # Using SQLite for local development, will switch to PostgreSQL later
