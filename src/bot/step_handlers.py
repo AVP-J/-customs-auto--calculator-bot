@@ -17,12 +17,10 @@ async def start_step_by_step(update: Update, context: ContextTypes.DEFAULT_TYPE)
     """Start step-by-step calculation process."""
     user_id = update.effective_user.id
     
-    # Reset or create new session
-    session_manager.delete_session(user_id)
-    session = session_manager.get_session(user_id)
-    session.update_state(UserState.CHOOSE_VEHICLE_TYPE)
+    # Initialize user data for the flow
+    context.user_data["input_step"] = "brand"
+    context.user_data["car_data"] = {}
     
-    # Send welcome message with input instructions
     message = (
         "🧮 *НАЧАТЬ РАСЧЁТ*\n\n"
         "Для расчёта таможенных платежей введите данные об автомобиле.\n\n"
@@ -30,7 +28,7 @@ async def start_step_by_step(update: Update, context: ContextTypes.DEFAULT_TYPE)
     )
     
     await update.message.reply_text(message, parse_mode="Markdown")
-    logger.info(f"Started step-by-step process for user {user_id}")
+    logger.info(f"Started step-by-step calculation for user {user_id}")
 
 
 async def handle_callback_query(update: Update, context: ContextTypes.DEFAULT_TYPE):
