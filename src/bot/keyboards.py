@@ -11,61 +11,6 @@ def get_start_calc_keyboard() -> InlineKeyboardMarkup:
         [InlineKeyboardButton("🚀 НАЧАТЬ РАСЧЁТ", callback_data="start_input")],
         [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
     ]
-    return InlineKeyboardMarkup(keyboard)
-
-
-def get_keyboard_for_state(state: UserState, user_data: dict = None) -> InlineKeyboardMarkup:
-    """
-    Get keyboard for specific user state.
-    
-    Args:
-        state: Current user state
-        user_data: User session data
-    
-    Returns:
-        InlineKeyboardMarkup for the state
-    """
-    if state == UserState.CHOOSE_VEHICLE_TYPE:
-        return get_vehicle_type_keyboard()
-    
-    elif state == UserState.CHOOSE_ENGINE_TYPE:
-        return get_engine_type_keyboard()
-    
-    elif state == UserState.CHOOSE_COUNTRY:
-        return get_country_keyboard()
-    
-    elif state == UserState.CONFIRM_DATA:
-        return get_confirmation_keyboard()
-    
-    elif state == UserState.SHOW_RESULT:
-        return get_result_keyboard()
-    
-    # Default empty keyboard
-    return InlineKeyboardMarkup([])
-
-
-def get_vehicle_type_keyboard() -> InlineKeyboardMarkup:
-    """Keyboard for choosing vehicle type."""
-    keyboard = [
-        [
-            InlineKeyboardButton("🚗 Легковой", callback_data="vehicle_type:car"),
-            InlineKeyboardButton("🚚 Грузовой", callback_data="vehicle_type:truck")
-        ],
-        [
-            InlineKeyboardButton("🏍️ Мотоцикл", callback_data="vehicle_type:motorcycle"),
-            InlineKeyboardButton("🚌 Автобус", callback_data="vehicle_type:bus")
-        ],
-        [
-            InlineKeyboardButton("🚜 Спецтехника", callback_data="vehicle_type:special"),
-            InlineKeyboardButton("🚲 Велосипед", callback_data="vehicle_type:bicycle")
-        ],
-        [
-            InlineKeyboardButton("❌ Отмена", callback_data="cancel")
-        ]
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-
 def get_engine_type_keyboard() -> InlineKeyboardMarkup:
     """Keyboard for choosing engine type — only 3 options."""
     keyboard = [
@@ -75,31 +20,6 @@ def get_engine_type_keyboard() -> InlineKeyboardMarkup:
         [InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")]
     ]
     return InlineKeyboardMarkup(keyboard)
-
-
-def get_country_keyboard() -> InlineKeyboardMarkup:
-    """Keyboard for choosing country of origin."""
-    keyboard = [
-        [
-            InlineKeyboardButton("🇨🇳 Китай", callback_data="country:china"),
-            InlineKeyboardButton("🇺🇸 США", callback_data="country:usa")
-        ],
-        [
-            InlineKeyboardButton("🇪🇺 Европа", callback_data="country:europe"),
-            InlineKeyboardButton("🇯🇵 Япония", callback_data="country:japan")
-        ],
-        [
-            InlineKeyboardButton("🇰🇷 Корея", callback_data="country:korea"),
-            InlineKeyboardButton("🇷🇺 Россия", callback_data="country:russia")
-        ],
-        [
-            InlineKeyboardButton("↩️ Назад", callback_data="back"),
-            InlineKeyboardButton("❌ Отмена", callback_data="cancel")
-        ]
-    ]
-    return InlineKeyboardMarkup(keyboard)
-
-
 def get_confirmation_keyboard() -> InlineKeyboardMarkup:
     """Keyboard for data confirmation."""
     keyboard = [
@@ -108,7 +28,7 @@ def get_confirmation_keyboard() -> InlineKeyboardMarkup:
             InlineKeyboardButton("✏️ Исправить", callback_data="confirm:no")
         ],
         [
-            InlineKeyboardButton("❌ Отмена", callback_data="cancel")
+            InlineKeyboardButton("❌ Отмена", callback_data="calc_cancel")
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
@@ -141,9 +61,6 @@ def get_currency_keyboard() -> InlineKeyboardMarkup:
         ],
         [
             InlineKeyboardButton("💶 EUR", callback_data="currency:eur"),
-            InlineKeyboardButton("🇰🇿 KZT", callback_data="currency:kzt")
-        ],
-        [
             InlineKeyboardButton("💴 JPY", callback_data="currency:jpy"),
         ],
         [
@@ -151,16 +68,50 @@ def get_currency_keyboard() -> InlineKeyboardMarkup:
         ]
     ]
     return InlineKeyboardMarkup(keyboard)
+def get_free_start_calc_keyboard() -> InlineKeyboardMarkup:
+    """Start free calculation button with tariffs and home."""
+    keyboard = [
+        [InlineKeyboardButton("💰 Тарифы", callback_data="show_tariffs")],
+        [InlineKeyboardButton("🚀 НАЧАТЬ РАСЧЁТ", callback_data="free_begin_input")],
+        [InlineKeyboardButton("🏠 В начало", callback_data="error_home")]
+    ]
+    return InlineKeyboardMarkup(keyboard)
 
+def get_tariffs_keyboard():
+    """Keyboard for tariffs screen."""
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("🆓 НОВИЧОК (Бесплатно)", callback_data="free_start_input")],
+        [InlineKeyboardButton("💳 ОПЛАТА ПО ФАКТУ — 299 ₸", callback_data="pay_299")],
+        [InlineKeyboardButton("📦 ПАКЕТ 500 ₸", callback_data="pay_500")],
+        [InlineKeyboardButton("📦 ПАКЕТ 1 000 ₸", callback_data="pay_1000")],
+        [InlineKeyboardButton("📦 ПАКЕТ 2 000 ₸", callback_data="pay_2000")],
+        [InlineKeyboardButton("👑 ПОДПИСКА PRO — 2 990 ₸/мес", callback_data="pay_pro")],
+        [InlineKeyboardButton("🏠 В начало", callback_data="error_home")]
+    ])
+    return keyboard
 
-def get_navigation_keyboard(show_back: bool = True, show_cancel: bool = True) -> InlineKeyboardMarkup:
-    """Generic navigation keyboard."""
-    buttons = []
-    
-    if show_back:
-        buttons.append(InlineKeyboardButton("↩️ Назад", callback_data="back"))
-    
-    if show_cancel:
-        buttons.append(InlineKeyboardButton("❌ Отмена", callback_data="cancel"))
-    
-    return InlineKeyboardMarkup([buttons]) if buttons else InlineKeyboardMarkup([])
+def get_error_keyboard() -> InlineKeyboardMarkup:
+    """Error screen keyboard with help and home buttons."""
+    keyboard = [
+        [InlineKeyboardButton("📚 Справка", callback_data="error_help")],
+        [InlineKeyboardButton("🏠 В начало", callback_data="error_home")],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def get_start_keyboard() -> InlineKeyboardMarkup:
+    """Start screen keyboard with free calculate and help buttons."""
+    keyboard = [
+        [InlineKeyboardButton("🧮 Рассчитать бесплатно", callback_data="free_start_input")],
+        [InlineKeyboardButton("📚 Справка", callback_data="error_help")],
+    ]
+    return InlineKeyboardMarkup(keyboard)
+
+def get_free_result_keyboard() -> InlineKeyboardMarkup:
+    """Keyboard after free calculation."""
+    keyboard = [
+        [InlineKeyboardButton("💰 Купить тариф", callback_data="show_tariffs")],
+        [InlineKeyboardButton("🔄 Новый расчёт (бесплатно)", callback_data="free_start_input")],
+        [InlineKeyboardButton("🏠 В начало", callback_data="error_home")]
+    ]
+    return InlineKeyboardMarkup(keyboard)

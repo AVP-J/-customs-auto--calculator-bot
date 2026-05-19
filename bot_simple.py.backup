@@ -55,7 +55,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• *Пакеты:* 500/1,000/2,000 ₸ (скидка до 44%)\n"
         "• *Подписка:* 1,990 ₸/месяц (неограниченно)\n\n"
         
-        "Начнём? Отправьте /calculate"
+        "Начнём? Отправьте /calculate или /расчет"
     )
     
     await update.message.reply_text(welcome_text, parse_mode='Markdown')
@@ -66,16 +66,16 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📚 *ПОМОЩЬ ПО CUSTOMS CALCULATOR BOT*\n\n"
         
         "*📋 КОМАНДЫ:*\n"
-        "/start — Начало работы\n"
-        "/calculate — Начать расчёт\n"
-        "/help — Эта справка\n\n"
+        "/start или /старт — Начало работы\n"
+        "/calculate или /расчет — Начать расчёт\n"
+        "/help или /помощь — Эта справка\n\n"
         
         "*🚗 КАК РАБОТАЕТ РАСЧЁТ:*\n"
         "1. Вы вводите данные об автомобиле\n"
         "2. Бот рассчитывает таможенные платежи\n"
         "3. Вы получаете детальный отчёт\n\n"
         
-        "Начать расчёт: /calculate"
+        "Начать расчёт: /calculate или /расчет"
     )
     
     await update.message.reply_text(help_text, parse_mode='Markdown')
@@ -177,7 +177,7 @@ async def show_tariffs(query, context):
         "• Экспорт в PDF\n"
         "• Приоритетная поддержка\n\n"
         
-        "Начать расчёт: /calculate"
+        "Начать расчёт: /calculate или /расчет"
     )
     
     keyboard = [
@@ -493,6 +493,12 @@ def main():
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("calculate", calculate_command))
+    
+    # Русские команды
+    application.add_handler(CommandHandler("старт", start_command))
+    application.add_handler(CommandHandler("помощь", help_command))
+    application.add_handler(CommandHandler("расчет", calculate_command))
+    application.add_handler(CommandHandler("таможня", calculate_command))
     
     # Добавляем обработчик inline кнопок
     application.add_handler(CallbackQueryHandler(button_callback))

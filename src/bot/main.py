@@ -6,9 +6,9 @@ import logging
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, CallbackQueryHandler
 
 from config.config import TELEGRAM_BOT_TOKEN, LOGGING_CONFIG, DEBUG
-from src.bot.handlers import start_handler, tariffs_handler, help_handler, calculate_handler, history_handler
-from src.bot.step_handlers import start_step_by_step, handle_callback_query, handle_text_input
-from src.bot.messages import text_message_handler
+from src.bot.handlers import start_handler, tariffs_handler, help_handler, calculate_handler, free_calculate_handler, history_handler
+from src.bot.step_handlers import start_step_by_step, handle_callback_query, handle_text_input, handle_voice_message
+
 
 # Configure logging
 import logging.config
@@ -19,14 +19,21 @@ def main():
     """Start the bot."""
     logger.info("Starting Customs Calculator Bot...")
     
+    # Force IPv4 for Telegram API (VPS has IPv6 issues)
+    from telegram.request import HTTPXRequest
+    request = HTTPXRequest(
+        connection_pool_size=1,
+    )
+    
     # Create application
-    application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).request(request).build()
     
     # Add command handlers (English)
     application.add_handler(CommandHandler("start", start_handler))
     application.add_handler(CommandHandler("tariffs", tariffs_handler))
     application.add_handler(CommandHandler("help", help_handler))
     application.add_handler(CommandHandler("calculate", calculate_handler))
+    application.add_handler(CommandHandler("free_calculate", free_calculate_handler))
     application.add_handler(CommandHandler("history", history_handler))
     
     # Add callback query handler for inline buttons (step-by-step interface)
@@ -34,6 +41,7 @@ def main():
     
     # Add message handler for text messages (step input, not a command)
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_input))
+    application.add_handler(MessageHandler(filters.VOICE, handle_voice_message))
     
     # Start the bot
     if DEBUG:
